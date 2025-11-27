@@ -6,17 +6,14 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-# Try to build the application, but continue even if it fails
-RUN npm run build || npm run build:fallback || echo Build completed
+# Build the application
+RUN npm run build
 
 # Stage 2: Serve the React application using Nginx
 FROM nginx:alpine
 
 # Copy built files from the build stage
-COPY --from=build /app/dist /usr/share/nginx/html 2>/dev/null || \
-    cp -r /app/build /usr/share/nginx/html 2>/dev/null || \
-    cp -r /app/public /usr/share/nginx/html 2>/dev/null || \
-    echo Using default files
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
