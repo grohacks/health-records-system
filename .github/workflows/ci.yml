@@ -75,3 +75,30 @@ jobs:
       run: |
         cd frontend
         docker push ${{ secrets.DOCKER_USERNAME }}/health-records-frontend:${{ github.sha }}
+
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      
+    - name: Configure Kubernetes credentials
+      run: |
+        mkdir -p ~/.kube/
+        echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+        chmod 600 ~/.kube/config
+      
+    - name: Update backend deployment with new image
+      run: |
+        kubectl set image deployment/health-records-backend backend=${{ secrets.DOCKER_USERNAME }}/health-records-backend:${{ github.sha }}
+        kubectl rollout status deployment/health-records-backend
+      
+    - name: Update frontend deployment with new image
+      run: |
+        kubectl set image deployment/health-records-frontend frontend=${{ secrets.DOCKER_USERNAME }}/health-records-frontend:${{ github.sha }}
+        kubectl rollout status deployment/health-records-frontend

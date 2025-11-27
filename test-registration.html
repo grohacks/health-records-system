@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Registration</title>
+</head>
+<body>
+    <h2>Register a Test User</h2>
+    <form id="registrationForm">
+        <div>
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" value="Test" required><br><br>
+        </div>
+        <div>
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" value="User" required><br><br>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="test@example.com" required><br><br>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="password123" required><br><br>
+        </div>
+        <div>
+            <label for="role">Role:</label>
+            <select id="role" name="role">
+                <option value="PATIENT">Patient</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="ADMIN">Admin</option>
+            </select><br><br>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value
+            };
+            
+            fetch('http://localhost:30980/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = '<p>Registration successful!</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = '<p>Error: ' + error + '</p>';
+            });
+        });
+    </script>
+</body>
+</html>
