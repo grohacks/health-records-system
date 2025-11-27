@@ -3,8 +3,7 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
-RUN npm install @types/node --save-dev
+RUN npm install
 
 COPY . .
 RUN npm run build:skip-ts || npm run build:fallback || vite build || mkdir -p dist && echo '{"message": "Placeholder build"}' > dist/index.html || echo "Build failed, continuing anyway"
