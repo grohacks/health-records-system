@@ -12,7 +12,9 @@ RUN mkdir -p /app/dist || echo "Creating dist directory"
 # Stage 2: Serve the React application using Nginx
 FROM nginx:alpine
 
-COPY --from=build /app/dist/* /usr/share/nginx/html/ 2>/dev/null || cp -r /app/build/* /usr/share/nginx/html/ 2>/dev/null || cp -r /app/public/* /usr/share/nginx/html/ 2>/dev/null || echo "Using default index.html"
+COPY --from=build /app/dist/* /usr/share/nginx/html/ 2>/dev/null || echo "Trying build directory"
+RUN cp -r /app/build/* /usr/share/nginx/html/ 2>/dev/null || echo "Trying dist directory"
+RUN cp -r /app/public/* /usr/share/nginx/html/ 2>/dev/null || echo "Trying public directory"
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
