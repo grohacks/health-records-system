@@ -110,14 +110,19 @@ api.interceptors.request.use(
       // Set Authorization header with Bearer token
       config.headers.Authorization = `Bearer ${token}`;
 
-      console.log("Adding token to request:", config.url);
-    } else {
+      // Only log in development mode
+      if (import.meta.env.DEV) {
+        console.log("Adding token to request:", config.url);
+      }
+    } else if (import.meta.env.DEV) {
       console.warn("No token found in localStorage for request:", config.url);
     }
     return config;
   },
   (error) => {
-    console.error("Request interceptor error:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Request interceptor error:", error);
+    }
     return Promise.reject(error);
   }
 );
@@ -302,6 +307,8 @@ export const userApi = {
   delete: (id: number) => api.delete(`/users/${id}`),
   // Use the public endpoint for doctors
   getDoctors: () => api.get("/public/doctors"),
+  // Add endpoint for doctors to get patients
+  getPatients: () => api.get("/users/patients"),
 };
 
 export const appointmentApi = {
@@ -309,8 +316,7 @@ export const appointmentApi = {
   getById: (id: number) => api.get(`/appointments/${id}`),
   getByDateRange: (start: string, end: string) =>
     api.get(`/appointments/date-range?start=${start}&end=${end}`),
-  create: (appointmentData: any) =>
-    axios.post(`${DIRECT_API_URL}/direct/appointment`, appointmentData),
+  create: (appointmentData: any) => api.post("/appointments", appointmentData),
   update: (id: number, appointmentData: any) =>
     api.put(`/appointments/${id}`, appointmentData),
   delete: (id: number) => api.delete(`/appointments/${id}`),

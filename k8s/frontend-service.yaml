@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: health-records-frontend-service
+spec:
+  selector:
+    app: health-records-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort

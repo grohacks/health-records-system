@@ -82,7 +82,8 @@ const MedicalRecordForm: React.FC = () => {
     return () => {
       clearRecord();
     };
-  }, [isEditMode, id, getRecordById, clearRecord, getUsers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, id]);
 
   // Set form values when currentRecord changes
   useEffect(() => {

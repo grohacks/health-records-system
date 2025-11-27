@@ -105,7 +105,9 @@ export const downloadLabReportFile = createAsyncThunk(
       // Return the Blob directly - we've configured Redux to ignore this non-serializable value
       return response.data;
     } catch (error) {
-      console.error("Error downloading file:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error downloading file:", error);
+      }
       return rejectWithValue("Failed to download file");
     }
   }
@@ -151,6 +153,7 @@ const labReportsSlice = createSlice({
       })
       .addCase(fetchLabReports.fulfilled, (state, action) => {
         state.loading = false;
+        // Ensure we only update if this is still the current request
         state.reports = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchLabReports.rejected, (state, action) => {

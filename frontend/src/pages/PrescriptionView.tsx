@@ -49,7 +49,8 @@ const PrescriptionView: React.FC = () => {
     if (prescriptionId) {
       getPrescriptionById(prescriptionId);
     }
-  }, [prescriptionId, getPrescriptionById]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prescriptionId]);
 
   const handleEdit = () => {
     navigate(`/prescriptions/edit/${prescriptionId}`);

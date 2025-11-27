@@ -128,8 +128,11 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    fetchData();
-  }, [user?.role]);
+    if (user) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.role, medicalRecords.length, labReports.length, prescriptions.length]);
 
   const getSummaryCards = () => {
     if (user?.role === "ROLE_ADMIN") {
@@ -264,19 +267,19 @@ const Dashboard: React.FC = () => {
       ...medicalRecords.map((record) => ({
         type: "Medical Record",
         description: record.diagnosis,
-        date: new Date(record.date).toLocaleDateString(),
+        date: new Date(record.createdAt).toLocaleDateString(),
         icon: <MedicalServices />,
       })),
       ...labReports.map((report) => ({
         type: "Lab Report",
         description: report.testName,
-        date: new Date(report.date).toLocaleDateString(),
+        date: new Date(report.testDate || report.createdAt).toLocaleDateString(),
         icon: <Science />,
       })),
       ...prescriptions.map((prescription) => ({
         type: "Prescription",
-        description: prescription.medication,
-        date: new Date(prescription.date).toLocaleDateString(),
+        description: prescription.medicationName,
+        date: new Date(prescription.createdAt).toLocaleDateString(),
         icon: <LocalPharmacy />,
       })),
     ];

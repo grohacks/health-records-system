@@ -229,6 +229,40 @@ public class NotificationService {
     }
 
     /**
+     * Delete notifications related to an appointment
+     * This is used when deleting an appointment to avoid foreign key constraint violations
+     */
+    @Transactional
+    public void deleteNotificationsByAppointment(Appointment appointment) {
+        try {
+            System.out.println("Deleting notifications for appointment ID: " + appointment.getId());
+            
+            // Find all notifications related to this appointment
+            List<Notification> relatedNotifications = notificationRepository.findByRelatedAppointment(appointment);
+            
+            System.out.println("Found " + relatedNotifications.size() + " notifications to delete");
+            
+            // Delete all related notifications
+            if (!relatedNotifications.isEmpty()) {
+                notificationRepository.deleteAll(relatedNotifications);
+                
+                // Clear cache for affected users
+                for (Notification notification : relatedNotifications) {
+                    Long userId = notification.getUser().getId();
+                    unreadCountCache.remove(userId);
+                    cacheTimestamps.remove(userId);
+                }
+            }
+            
+            System.out.println("Successfully deleted notifications for appointment ID: " + appointment.getId());
+        } catch (Exception e) {
+            System.out.println("Error deleting notifications for appointment: " + e.getMessage());
+            e.printStackTrace();
+            // Don't throw exception - notification deletion shouldn't prevent appointment deletion
+        }
+    }
+
+    /**
      * Count unread notifications for a specific user (for testing)
      */
     public Long countUnreadNotificationsForUser(Long userId) {

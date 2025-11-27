@@ -1,0 +1,25 @@
+import java.util.Scanner;
+
+public class ShortestIncreasingPath {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int testCase = scanner.nextInt();  
+
+        while (testCase-- > 0) {
+            long xPoint = scanner.nextLong();
+            long yPoint = scanner.nextLong();
+
+            if (xPoint == yPoint) {
+                System.out.println(-1);
+            } else if (Math.min(xPoint, yPoint) == 1 && Math.max(xPoint, yPoint) > 2) {
+                System.out.println(-1);
+            } else if (Math.abs(xPoint - yPoint) == 1) {
+                System.out.println(3);
+            } else {
+                System.out.println(2);
+            }
+        }
+
+        scanner.close();
+    }
+}

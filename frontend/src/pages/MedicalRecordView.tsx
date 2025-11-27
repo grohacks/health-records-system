@@ -54,7 +54,8 @@ const MedicalRecordView: React.FC = () => {
     return () => {
       clearRecord();
     };
-  }, [id, getRecordById, clearRecord]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Check if user has edit permissions
   const canEdit =
@@ -258,8 +259,8 @@ const MedicalRecordView: React.FC = () => {
                             <MedicationIcon />
                           </ListItemIcon>
                           <ListItemText
-                            primary={prescription.medication}
-                            secondary={`${prescription.dosage} - ${prescription.frequency}`}
+                            primary={prescription.medicationName}
+                            secondary={`${prescription.dosage} - ${prescription.instructions}`}
                           />
                         </ListItem>
                       ))}
@@ -286,7 +287,7 @@ const MedicalRecordView: React.FC = () => {
                           <ListItemText
                             primary={report.testName}
                             secondary={`Date: ${new Date(
-                              report.date
+                              report.testDate
                             ).toLocaleDateString()}`}
                           />
                         </ListItem>

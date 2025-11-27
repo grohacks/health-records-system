@@ -11,9 +11,10 @@ import java.io.IOException;
 
 /**
  * Global CORS filter to allow cross-origin requests
+ * DISABLED: Conflicts with other CORS configurations
  */
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+// @Component
+// @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalCorsFilter implements Filter {
 
     @Override

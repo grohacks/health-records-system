@@ -10,7 +10,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/test")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+@CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
 public class TestController {
 
     /**

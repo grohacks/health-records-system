@@ -191,22 +191,31 @@ public class LabReportService {
     }
 
     public ResponseEntity<byte[]> downloadLabReport(Long id) {
-        LabReport labReport = labReportRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Lab report not found with id: " + id));
+    LabReport labReport = labReportRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Lab report not found with id: " + id));
 
-        if (labReport.getFileUrl() == null || labReport.getFileName() == null || labReport.getFileType() == null) {
-            throw new IllegalStateException("No file associated with this lab report");
-        }
+    if (labReport.getFileUrl() == null || labReport.getFileName() == null || labReport.getFileType() == null) {
+        // Log error for missing file info
+        System.err.println("[LabReportService] No file associated with lab report id: " + id);
+        return ResponseEntity.status(404)
+            .header("Content-Type", "application/json")
+            .body(("{\"error\":\"No file associated with this lab report\"}").getBytes());
+    }
 
-        try {
-            return fileStorageService.createFileResponse(
-                    labReport.getFileUrl(),
-                    labReport.getFileName(),
-                    labReport.getFileType()
-            );
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to download file", e);
-        }
+    try {
+        return fileStorageService.createFileResponse(
+            labReport.getFileUrl(),
+            labReport.getFileName(),
+            labReport.getFileType()
+        );
+    } catch (IOException e) {
+        // Log error for missing/unreadable file
+        System.err.println("[LabReportService] Failed to download file for lab report id: " + id);
+        e.printStackTrace();
+        return ResponseEntity.status(500)
+            .header("Content-Type", "application/json")
+            .body(("{\"error\":\"Failed to download file: " + e.getMessage() + "\"}").getBytes());
+    }
     }
 
     @Transactional

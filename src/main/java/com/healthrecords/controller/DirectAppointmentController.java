@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/direct-appointment")
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+@CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
 @RequiredArgsConstructor
 public class DirectAppointmentController {
 

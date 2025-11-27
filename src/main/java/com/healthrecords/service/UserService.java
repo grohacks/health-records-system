@@ -40,6 +40,16 @@ public class UserService {
         return doctors;
     }
 
+    /**
+     * Get all patients - accessible to admins and doctors
+     */
+    public List<User> getAllPatients() {
+        System.out.println("UserService: Getting all patients");
+        List<User> patients = userRepository.findByRole(UserRole.ROLE_PATIENT);
+        System.out.println("UserService: Found " + patients.size() + " patients");
+        return patients;
+    }
+
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));

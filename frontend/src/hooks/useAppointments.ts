@@ -68,8 +68,25 @@ export const useAppointments = () => {
   );
 
   const removeAppointment = useCallback(
-    (id: number) => {
-      return dispatch(deleteAppointment(id));
+    async (id: number) => {
+      try {
+        if (import.meta.env.DEV) {
+          console.log("Removing appointment with ID:", id);
+        }
+        
+        const result = await dispatch(deleteAppointment(id));
+        
+        if (import.meta.env.DEV) {
+          console.log("Delete appointment result:", result);
+        }
+        
+        return result;
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error("Error in removeAppointment:", error);
+        }
+        throw error;
+      }
     },
     [dispatch]
   );
@@ -77,11 +94,16 @@ export const useAppointments = () => {
   const rejectAppointment = useCallback(
     async (id: number, reason: string) => {
       try {
-        console.log(`Rejecting appointment with ID: ${id}, reason: ${reason}`);
+        if (import.meta.env.DEV) {
+          console.log(`Rejecting appointment with ID: ${id}, reason: ${reason}`);
+        }
 
         // Use the dedicated API endpoint for rejecting appointments
         const response = await appointmentApi.rejectAppointment(id, reason);
-        console.log(`Appointment rejected successfully:`, response.data);
+        
+        if (import.meta.env.DEV) {
+          console.log(`Appointment rejected successfully:`, response.data);
+        }
 
         // Update the Redux store with the updated appointment
         dispatch(
@@ -96,73 +118,54 @@ export const useAppointments = () => {
 
         return response.data;
       } catch (error) {
-        console.error("Error rejecting appointment:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error rejecting appointment:", error);
+        }
         throw error;
       }
     },
-    [dispatch, fetchMyUpcomingAppointments]
+    [dispatch]
   );
 
   const getMyAppointments = useCallback(() => {
-    console.log("Fetching my appointments for user role:", user?.role);
+    if (import.meta.env.DEV) {
+      console.log("Fetching my appointments for user role:", user?.role);
+    }
     return dispatch(fetchMyAppointments()).then((result) => {
-      console.log("My appointments result:", result);
+      if (import.meta.env.DEV) {
+        console.log("My appointments result:", result);
+      }
       return result;
     });
   }, [dispatch, user?.role]);
 
   const getMyUpcomingAppointments = useCallback(() => {
-    console.log("Fetching my upcoming appointments for user role:", user?.role);
-
-    // If user is a doctor, try the direct endpoint first
-    if (user?.role === "ROLE_DOCTOR" && user?.id) {
-      console.log("Using direct endpoint for doctor ID:", user.id);
-
-      return appointmentApi
-        .getAppointmentsForDoctor(user.id)
-        .then((response) => {
-          console.log("Direct endpoint response:", response.data);
-
-          if (response.data && response.data.length > 0) {
-            // Update the Redux store with the fetched appointments
-            dispatch(setAppointments(response.data));
-            return { payload: response.data };
-          } else {
-            // Fall back to the regular endpoint if no appointments found
-            console.log(
-              "No appointments found with direct endpoint, falling back to regular endpoint"
-            );
-            return dispatch(fetchMyUpcomingAppointments()).then((result) => {
-              console.log("Fetched my upcoming appointments:", result);
-              return result;
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error using direct endpoint:", error);
-          // Fall back to the regular endpoint if there's an error
-          return dispatch(fetchMyUpcomingAppointments()).then((result) => {
-            console.log("Fetched my upcoming appointments:", result);
-            return result;
-          });
-        });
-    } else {
-      // For non-doctors, use the regular endpoint
-      return dispatch(fetchMyUpcomingAppointments()).then((result) => {
-        console.log("My upcoming appointments result:", result);
-        return result;
-      });
+    if (import.meta.env.DEV) {
+      console.log("Fetching my upcoming appointments for user role:", user?.role);
     }
-  }, [dispatch, user?.role, user?.id]);
+
+    // Use the regular Redux action instead of custom API calls
+    return dispatch(fetchMyUpcomingAppointments()).then((result) => {
+      if (import.meta.env.DEV) {
+        console.log("My upcoming appointments result:", result);
+      }
+      return result;
+    });
+  }, [dispatch, user?.role]);
 
   const confirmAppointmentStatus = useCallback(
     async (id: number) => {
       try {
-        console.log(`Confirming appointment with ID: ${id}`);
+        if (import.meta.env.DEV) {
+          console.log(`Confirming appointment with ID: ${id}`);
+        }
 
         // Use the dedicated API endpoint for confirming appointments
         const response = await appointmentApi.confirmAppointment(id);
-        console.log(`Appointment confirmed successfully:`, response.data);
+        
+        if (import.meta.env.DEV) {
+          console.log(`Appointment confirmed successfully:`, response.data);
+        }
 
         // Update the Redux store with the updated appointment
         dispatch(
@@ -177,11 +180,13 @@ export const useAppointments = () => {
 
         return response.data;
       } catch (error) {
-        console.error("Error confirming appointment:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error confirming appointment:", error);
+        }
         throw error;
       }
     },
-    [dispatch, fetchMyUpcomingAppointments]
+    [dispatch]
   );
 
   const clearAppointment = useCallback(() => {

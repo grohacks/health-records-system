@@ -95,13 +95,8 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({ onSuccess }) => {
     return () => {
       clearPrescription();
     };
-  }, [
-    prescriptionId,
-    getPrescriptionById,
-    clearPrescription,
-    getUsers,
-    getAllRecords,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prescriptionId]);
 
   // Populate form when currentPrescription changes
   useEffect(() => {

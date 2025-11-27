@@ -12,9 +12,10 @@ import java.io.IOException;
 /**
  * CORS filter for direct endpoints
  * This filter adds CORS headers to all responses from direct endpoints
+ * DISABLED: Using WebConfig CORS instead
  */
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+// @Component
+// @Order(Ordered.HIGHEST_PRECEDENCE)
 public class DirectCorsFilter implements Filter {
 
     @Override

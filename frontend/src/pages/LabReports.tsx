@@ -60,20 +60,40 @@ const LabReports: React.FC = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
-  // Load data on component mount
+  // Load data on component mount - SINGLE CALL ONLY
   useEffect(() => {
-    if (user) {
-      if (user.role === "ROLE_PATIENT") {
-        getReportsByPatient(user.id);
-      } else if (user.role === "ROLE_DOCTOR") {
-        getReportsByDoctor(user.id);
-      } else {
-        getAllReports();
+    let isMounted = true;
+    
+    const loadData = async () => {
+      if (!user) {
+        if (isMounted) {
+          getAllReports();
+        }
+        return;
       }
-    } else {
-      getAllReports();
-    }
-  }, [user, getAllReports, getReportsByPatient, getReportsByDoctor]);
+
+      if (user.role === "ROLE_PATIENT") {
+        if (isMounted) {
+          getReportsByPatient(user.id);
+        }
+      } else if (user.role === "ROLE_DOCTOR") {
+        if (isMounted) {
+          getReportsByDoctor(user.id);
+        }
+      } else {
+        if (isMounted) {
+          getAllReports();
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.role]);
 
   // Check if user has edit permissions
   const canEdit =

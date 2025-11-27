@@ -56,7 +56,8 @@ const Users: React.FC = () => {
 
   useEffect(() => {
     getUsers();
-  }, [getUsers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Filter users based on selected roles
   const filteredUsers =

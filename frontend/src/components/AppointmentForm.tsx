@@ -37,7 +37,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
   onCancel,
 }) => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const { addAppointment, editAppointment, loading } = useAppointments();
+  const { addAppointment, editAppointment, loading: hookLoading } = useAppointments();
+
+  // Local loading state for form submission
+  const [loading, setLoading] = useState(false);
 
   // Local error state
   const [error, setError] = useState<string | null>(null);
@@ -83,12 +86,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
           setPatients(patientsList);
         } else if (user?.role === "ROLE_DOCTOR") {
           // Doctors need patients and their own info
-          // First, fetch all patients
-          const response = await userApi.getAll();
-          const allUsers = response.data;
-          const patientsList = allUsers.filter(
-            (u: User) => u.role === "ROLE_PATIENT"
-          );
+          // First, fetch all patients using the dedicated endpoint
+          const response = await userApi.getPatients();
+          const patientsList = response.data;
           setPatients(patientsList);
 
           // Then, set the current doctor
@@ -202,9 +202,18 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prevent double submission
+    if (loading) {
+      return;
+    }
+
     if (!appointmentDateTime) {
       return;
     }
+
+    // Set loading state to prevent double submission
+    setLoading(true);
+    setError(""); // Clear any previous errors
 
     // Ensure patientId is set
     const finalPatientId = user?.role === "ROLE_PATIENT" ? user.id : patientId;
@@ -288,52 +297,22 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
             throw new Error("Doctor selection is required");
           }
 
-          // Send the request to the direct endpoint
+          // Send the request to the correct public endpoint for patients
           console.log(
-            "Sending appointment data to direct endpoint:",
+            "Sending appointment data to /api/open/appointments:",
             JSON.stringify(appointmentData)
           );
 
           try {
-            // Use axios directly
             const axios = (await import("axios")).default;
-
-            // First test if the endpoint is accessible
-            console.log("Testing direct appointment endpoint");
-            try {
-              const testResponse = await axios.get(
-                "http://localhost:8080/direct-appointment/test"
-              );
-              console.log(
-                "Direct appointment test endpoint response:",
-                testResponse.data
-              );
-            } catch (testError) {
-              console.error(
-                "Error testing direct appointment endpoint:",
-                testError
-              );
+            // Remove status field if present
+            if ("status" in appointmentData) {
+              delete appointmentData.status;
             }
-
-            // Try the direct appointment endpoint
-            console.log("Trying direct appointment endpoint");
-            // Ensure we're not sending any status field to prevent "Data truncated for column 'status'" error
-            const appointmentDataWithoutStatus = {
-              ...appointmentData,
-            };
-
-            // Explicitly delete the status field if it exists
-            if ("status" in appointmentDataWithoutStatus) {
-              delete appointmentDataWithoutStatus.status;
-            }
-
-            console.log(
-              "Appointment data (without status):",
-              JSON.stringify(appointmentDataWithoutStatus, null, 2)
-            );
+            // POST to the correct endpoint for public/patient appointment creation
             const response = await axios.post(
-              "http://localhost:8080/direct-appointment",
-              appointmentDataWithoutStatus,
+              "/api/open/appointments",
+              appointmentData,
               {
                 headers: {
                   "Content-Type": "application/json",
@@ -341,12 +320,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
                 },
               }
             );
-            console.log("Direct appointment creation result:", response.data);
-
-            return response.data;
+            console.log("Appointment creation result:", response.data);
+            // Don't return here - we need to call onSuccess()
           } catch (apiError: any) {
-            console.error("Direct API error:", apiError);
-
+            console.error("API error:", apiError);
             if (apiError.response) {
               console.error("Error response:", apiError.response.data);
               throw new Error(
@@ -378,6 +355,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       // Show success message and close form
       onSuccess();
     } catch (error: any) {
+      setLoading(false); // Reset loading state on error
       console.error("Error saving appointment:", error);
 
       // Show a more specific error message
@@ -398,6 +376,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       if (error.response) {
         console.error("Server response:", error.response);
       }
+    } finally {
+      // Always reset loading state
+      setLoading(false);
     }
   };
 

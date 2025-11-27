@@ -45,7 +45,8 @@ const MedicalRecords: React.FC = () => {
 
   useEffect(() => {
     getAllRecords();
-  }, [getAllRecords]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEdit = (id: number) => {
     navigate(`/medical-records/edit/${id}`);

@@ -302,7 +302,21 @@ public class AppointmentService {
             throw new AccessDeniedException("Patients cannot delete appointments");
         }
 
-        appointmentRepository.delete(appointment);
+        System.out.println("Deleting appointment with ID: " + id);
+        
+        try {
+            // First, delete any related notifications
+            notificationService.deleteNotificationsByAppointment(appointment);
+            
+            // Then delete the appointment
+            appointmentRepository.delete(appointment);
+            
+            System.out.println("Successfully deleted appointment with ID: " + id);
+        } catch (Exception e) {
+            System.out.println("Error deleting appointment: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete appointment: " + e.getMessage());
+        }
     }
 
     /**

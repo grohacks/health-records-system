@@ -19,7 +19,7 @@ import java.util.Map;
  * This is a temporary solution for testing
  */
 @RestController
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
 @RequestMapping("/direct")
 public class DirectController {
 

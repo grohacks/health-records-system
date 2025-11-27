@@ -17,7 +17,7 @@ public class SimpleController {
      * Simple test endpoint
      */
     @GetMapping("/simple/test")
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
     public ResponseEntity<?> test() {
         return ResponseEntity.ok(Map.of(
             "message", "Simple test endpoint is working",
@@ -30,7 +30,7 @@ public class SimpleController {
      * Simple echo endpoint
      */
     @PostMapping("/simple/echo")
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
     public ResponseEntity<?> echo(@RequestBody Map<String, Object> request) {
         return ResponseEntity.ok(Map.of(
             "message", "Echo endpoint is working",

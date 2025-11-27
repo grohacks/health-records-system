@@ -1,0 +1,36 @@
+---
+- name: Deploy Health Records Application to Kubernetes
+  hosts: kubernetes
+  connection: local
+  gather_facts: false
+  
+  tasks:
+    - name: Apply backend deployment
+      kubernetes.core.k8s:
+        state: present
+        src: ../k8s/backend-deployment.yaml
+        kubeconfig: ~/.kube/config
+
+    - name: Apply backend service
+      kubernetes.core.k8s:
+        state: present
+        src: ../k8s/backend-service.yaml
+        kubeconfig: ~/.kube/config
+
+    - name: Apply frontend deployment
+      kubernetes.core.k8s:
+        state: present
+        src: ../k8s/frontend-deployment.yaml
+        kubeconfig: ~/.kube/config
+
+    - name: Apply frontend service
+      kubernetes.core.k8s:
+        state: present
+        src: ../k8s/frontend-service.yaml
+        kubeconfig: ~/.kube/config
+
+    - name: Apply secrets
+      kubernetes.core.k8s:
+        state: present
+        src: ../k8s/secrets.yaml
+        kubeconfig: ~/.kube/config

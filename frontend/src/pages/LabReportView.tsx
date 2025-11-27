@@ -45,7 +45,8 @@ const LabReportView: React.FC = () => {
     return () => {
       clearReport();
     };
-  }, [id, getReportById, clearReport]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Check if user has edit permissions
   const canEdit = user && (user.role === 'ROLE_ADMIN' || user.role === 'ROLE_DOCTOR');

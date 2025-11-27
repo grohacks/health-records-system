@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/no-security")
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
 public class NoSecurityController {
 
     private final UserService userService;

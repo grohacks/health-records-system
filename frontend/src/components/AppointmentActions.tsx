@@ -23,7 +23,7 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
     statusStr.includes("PENDING") ||
     statusStr.includes("REQUESTED") ||
     statusStr === "0" || // Sometimes enum values are serialized as numbers
-    status === 0; // Handle numeric status
+    Number(status) === 0; // Handle numeric status
 
   // Check if the user is a doctor or admin (more lenient)
   const isAuthorized =
@@ -32,24 +32,9 @@ const AppointmentActions: React.FC<AppointmentActionsProps> = ({
     String(userRole || "").includes("DOCTOR") ||
     String(userRole || "").includes("ADMIN");
 
-  // Enhanced debugging
-  console.log(`AppointmentActions: Appointment ${appointmentId}`);
-  console.log(`- Status: ${status} (${typeof status})`);
-  console.log(`- User Role: ${userRole} (${typeof userRole})`);
-  console.log(`- isPending: ${isPending}`);
-  console.log(`- isAuthorized: ${isAuthorized}`);
-  console.log(`- Will show buttons: ${isAuthorized && isPending}`);
-
   if (!isAuthorized || !isPending) {
-    console.log(
-      `AppointmentActions: Not rendering buttons because isAuthorized=${isAuthorized}, isPending=${isPending}`
-    );
     return null;
   }
-
-  console.log(
-    `AppointmentActions: Rendering approve/reject buttons for appointment ${appointmentId}`
-  );
 
   return (
     <>

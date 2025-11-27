@@ -19,7 +19,9 @@ export const login = createAsyncThunk(
       localStorage.setItem('token', token)
       return { token, user }
     } catch (error: any) {
-      console.error('Login error details:', error)
+      if (import.meta.env.DEV) {
+        console.error('Login error details:', error)
+      }
       return rejectWithValue(error)
     }
   }
@@ -83,8 +85,10 @@ const authSlice = createSlice({
         // Store token in localStorage
         localStorage.setItem('token', action.payload.token)
         
-        // Log the user role for debugging
-        console.log('User role after login:', action.payload.user?.role)
+        // Log the user role for debugging (development only)
+        if (import.meta.env.DEV) {
+          console.log('User role after login:', action.payload.user?.role)
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false

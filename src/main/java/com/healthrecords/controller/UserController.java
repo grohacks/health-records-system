@@ -76,6 +76,40 @@ public class UserController {
         }
     }
 
+    @GetMapping("/patients")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_DOCTOR')")
+    public ResponseEntity<List<UserDTO>> getAllPatients() {
+        System.out.println("==== Received request to get all patients from UserController ====");
+
+        try {
+            // Log the authentication details
+            org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+            if (auth != null) {
+                System.out.println("Authenticated user: " + auth.getName());
+                System.out.println("User authorities: " +
+                    auth.getAuthorities().stream()
+                        .map(authority -> authority.getAuthority())
+                        .collect(java.util.stream.Collectors.joining(", ")));
+            }
+
+            List<User> patients = userService.getAllPatients();
+            System.out.println("Found " + patients.size() + " patients");
+
+            // Convert to DTOs
+            List<UserDTO> patientDTOs = patients.stream()
+                .map(UserDTO::fromUser)
+                .toList();
+
+            return ResponseEntity.ok(patientDTOs);
+        } catch (Exception e) {
+            System.out.println("Error in getAllPatients: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {

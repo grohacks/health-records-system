@@ -47,7 +47,9 @@ export const createAppointment = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log("Creating appointment with data:", appointmentData);
+      if (import.meta.env.DEV) {
+        console.log("Creating appointment with data:", appointmentData);
+      }
 
       // Validate required fields
       if (!appointmentData.title) {
@@ -58,71 +60,46 @@ export const createAppointment = createAsyncThunk(
         return rejectWithValue("Appointment date and time are required");
       }
 
-      if (!appointmentData.doctor && !appointmentData.doctorId) {
+      if (!appointmentData.doctor) {
         return rejectWithValue("Doctor selection is required");
       }
 
-      // Import axios directly
-      const axios = (await import("axios")).default;
-
-      // First test if the endpoint is accessible
-      console.log("Testing direct appointment endpoint from Redux slice");
-      try {
-        const testResponse = await axios.get(
-          "http://localhost:8080/direct-appointment/test"
-        );
-        console.log(
-          "Direct appointment test endpoint response:",
-          testResponse.data
-        );
-      } catch (testError) {
-        console.error("Error testing direct appointment endpoint:", testError);
-      }
-
-      // Try the direct appointment endpoint
-      console.log("Trying direct appointment endpoint from Redux slice");
-
-      // Ensure we're not sending any status field to prevent "Data truncated for column 'status'" error
-      const appointmentDataWithoutStatus = {
-        ...appointmentData,
+      // Clean the data - remove status to prevent backend issues
+      const cleanData = {
+        title: appointmentData.title,
+        description: appointmentData.description || "",
+        appointmentDateTime: appointmentData.appointmentDateTime,
+        doctorId: typeof appointmentData.doctor === 'object' 
+          ? appointmentData.doctor.id 
+          : appointmentData.doctor,
+        patientId: typeof appointmentData.patient === 'object' 
+          ? appointmentData.patient.id 
+          : appointmentData.patient,
+        isVideoConsultation: appointmentData.isVideoConsultation || false,
+        meetingLink: appointmentData.meetingLink || "",
+        notes: appointmentData.notes || ""
       };
 
-      // Explicitly delete the status field if it exists
-      if ("status" in appointmentDataWithoutStatus) {
-        delete appointmentDataWithoutStatus.status;
+      if (import.meta.env.DEV) {
+        console.log("Clean appointment data:", cleanData);
       }
 
-      console.log(
-        "Appointment data (without status):",
-        JSON.stringify(appointmentDataWithoutStatus, null, 2)
-      );
-      const response = await axios.post(
-        "http://localhost:8080/direct-appointment",
-        appointmentDataWithoutStatus,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-      console.log("Appointment created successfully:", response.data);
+      const response = await appointmentApi.create(cleanData);
+      
+      if (import.meta.env.DEV) {
+        console.log("Appointment created successfully:", response.data);
+      }
+      
       return response.data;
     } catch (error: any) {
-      console.error("Error creating appointment:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error creating appointment:", error);
+      }
 
-      // Handle different error formats
-      console.log("Error object:", error);
-
-      if (error.response && error.response.data) {
-        console.error("Error response data:", error.response.data);
+      if (error.response?.data) {
         return rejectWithValue(error.response.data.error || "Server error");
-      } else if (error.error) {
-        return rejectWithValue(error.error);
       } else if (error.message) {
         return rejectWithValue(error.message);
-      } else if (typeof error === "string") {
-        return rejectWithValue(error);
       } else {
         return rejectWithValue("Failed to create appointment");
       }

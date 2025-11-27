@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/public-test")
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
 public class PublicTestController {
 
     /**

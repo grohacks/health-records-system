@@ -117,7 +117,9 @@ export const useLabReports = () => {
         const blob = await dispatch(downloadLabReportFile(id)).unwrap();
 
         if (!blob) {
-          console.error("No blob received from the server");
+          if (import.meta.env.DEV) {
+            console.error("No blob received from the server");
+          }
           return false;
         }
 
@@ -141,7 +143,9 @@ export const useLabReports = () => {
 
         return true;
       } catch (err) {
-        console.error("Error downloading file:", err);
+        if (import.meta.env.DEV) {
+          console.error("Error downloading file:", err);
+        }
         return false;
       }
     },

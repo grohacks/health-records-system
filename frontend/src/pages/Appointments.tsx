@@ -76,57 +76,52 @@ const Appointments: React.FC = () => {
     rejectAppointment,
   } = useAppointments();
 
-  // Load appointments function
-  const loadAppointments = useCallback(() => {
-    if (user?.role === "ROLE_ADMIN") {
-      getAppointments();
-    } else {
-      getMyUpcomingAppointments();
-    }
-  }, [user?.role, getAppointments, getMyUpcomingAppointments]);
-
-  // Load appointments when component mounts
-  useEffect(() => {
-    // Only proceed if user is defined
+  // Load appointments function - stabilized with useCallback
+  const loadAppointments = useCallback(async () => {
     if (!user) return;
-
-    console.log("Appointments component mounted with user:", user.email);
-    console.log("User role:", user.role);
-
-    // Debug: Check if the user is a doctor
-    if (user.role === "ROLE_DOCTOR") {
-      console.log(
-        "User is a doctor - should see approve/reject buttons for PENDING appointments"
-      );
-    } else {
-      console.log("User is not a doctor - role:", user.role);
+    
+    try {
+      if (user.role === "ROLE_ADMIN") {
+        await getAppointments();
+      } else {
+        await getMyUpcomingAppointments();
+      }
+    } catch (error) {
+      console.error("Error loading appointments:", error);
     }
+  }, [user?.role, user?.id, getAppointments, getMyUpcomingAppointments]);
 
-    // Force refresh appointments immediately - only once when component mounts
-    if (user.role === "ROLE_DOCTOR") {
-      console.log("Doctor role detected - forcing refresh of appointments");
-      getMyUpcomingAppointments();
-    } else if (user.role === "ROLE_ADMIN") {
-      console.log("Admin role detected - forcing refresh of appointments");
-      getAppointments();
-    } else {
-      console.log(
-        "Patient or other role detected - loading appointments normally"
-      );
-      loadAppointments();
-    }
+  // Load appointments when component mounts - SIMPLIFIED
+  useEffect(() => {
+    if (!user?.id) return;
 
-    // Set up a refresh interval (every 60 seconds instead of 15)
-    // This reduces the number of API calls
+    let isMounted = true;
+    
+    const initializeAppointments = async () => {
+      if (!isMounted) return;
+      
+      if (import.meta.env.DEV) {
+        console.log("Initializing appointments for user:", user.email, "role:", user.role);
+      }
+      
+      await loadAppointments();
+    };
+    
+    // Only initialize once
+    initializeAppointments();
+
+    // Set up refresh interval
     const interval = setInterval(() => {
-      console.log("Refreshing appointments...");
-      loadAppointments();
-    }, 60000); // Changed from 15000 to 60000 (1 minute)
+      if (isMounted) {
+        loadAppointments();
+      }
+    }, 60000);
 
-    return () => clearInterval(interval);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]); // Only re-run when user ID changes, not on every render
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [user?.id, loadAppointments]); // Depend on stable loadAppointments
 
   const handleCreateAppointment = () => {
     setSelectedAppointment(null);
@@ -140,8 +135,30 @@ const Appointments: React.FC = () => {
 
   const handleDeleteAppointment = async (id: number) => {
     if (confirmDelete === id) {
-      await removeAppointment(id);
-      setConfirmDelete(null);
+      try {
+        if (import.meta.env.DEV) {
+          console.log("Deleting appointment with ID:", id);
+        }
+        
+        await removeAppointment(id);
+        
+        // Show success message
+        alert("Appointment deleted successfully.");
+        
+        // Clear confirmation state
+        setConfirmDelete(null);
+        
+        // Refresh appointments list
+        loadAppointments();
+        
+        if (import.meta.env.DEV) {
+          console.log("Appointment deleted and list refreshed");
+        }
+      } catch (error) {
+        console.error("Error deleting appointment:", error);
+        alert("Failed to delete appointment. Please try again.");
+        setConfirmDelete(null);
+      }
     } else {
       setConfirmDelete(id);
       // Auto-reset after 3 seconds
@@ -276,7 +293,9 @@ const Appointments: React.FC = () => {
                 variant="outlined"
                 color="primary"
                 onClick={() => {
-                  console.log("Manual refresh triggered");
+                  if (import.meta.env.DEV) {
+                    console.log("Manual refresh triggered");
+                  }
                   if (user?.role === "ROLE_DOCTOR") {
                     getMyUpcomingAppointments();
                   } else if (user?.role === "ROLE_ADMIN") {
@@ -374,12 +393,6 @@ const Appointments: React.FC = () => {
                       </StyledTableRow>
                     ) : (
                       appointments.map((appointment) => {
-                        // Debug: Log appointment details
-                        console.log(`Rendering appointment ${appointment.id}:`);
-                        console.log(`- Status: ${appointment.status}`);
-                        console.log(`- Doctor: ${appointment.doctor?.id}`);
-                        console.log(`- Patient: ${appointment.patient?.id}`);
-
                         return (
                           <StyledTableRow key={appointment.id}>
                             <StyledTableCell>
@@ -447,49 +460,6 @@ const Appointments: React.FC = () => {
                                 onApprove={handleConfirmAppointment}
                                 onReject={handleRejectAppointment}
                               />
-
-                              {/* Fallback buttons in case the component doesn't render */}
-                              {(user?.role === "ROLE_DOCTOR" ||
-                                user?.role === "ROLE_ADMIN") &&
-                                (String(appointment.status || "")
-                                  .toUpperCase()
-                                  .includes("PENDING") ||
-                                  String(appointment.status || "")
-                                    .toUpperCase()
-                                    .includes("REQUESTED") ||
-                                  appointment.status === 0 ||
-                                  appointment.status === "0") && (
-                                  <>
-                                    <Tooltip title="Approve Appointment (Fallback)">
-                                      <IconButton
-                                        size="small"
-                                        color="success"
-                                        onClick={() =>
-                                          handleConfirmAppointment(
-                                            appointment.id
-                                          )
-                                        }
-                                        sx={{ mr: 1 }}
-                                      >
-                                        <CheckIcon />
-                                      </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Reject Appointment (Fallback)">
-                                      <IconButton
-                                        size="small"
-                                        color="error"
-                                        onClick={() =>
-                                          handleRejectAppointment(
-                                            appointment.id
-                                          )
-                                        }
-                                        sx={{ mr: 1 }}
-                                      >
-                                        <CancelIcon />
-                                      </IconButton>
-                                    </Tooltip>
-                                  </>
-                                )}
 
                               {/* Delete button - only for doctors and admins */}
                               {(user?.role === "ROLE_DOCTOR" ||

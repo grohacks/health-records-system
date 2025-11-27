@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Grid,
@@ -62,6 +62,10 @@ const LabReportForm: React.FC<LabReportFormProps> = ({
   const [patientId, setPatientId] = useState<number | "">("");
   const [doctorId, setDoctorId] = useState<number | "">("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  
+  // Use refs to track initialization state and prevent multiple API calls
+  const initializationRef = useRef<{ [key: string]: boolean }>({});
+  const isMountedRef = useRef(true);
 
   // File upload state
   const [fileError, setFileError] = useState<string | null>(null);
@@ -70,18 +74,38 @@ const LabReportForm: React.FC<LabReportFormProps> = ({
   const patients = users.filter((user) => user.role === "ROLE_PATIENT");
   const doctors = users.filter((user) => user.role === "ROLE_DOCTOR");
 
-  // Load data on component mount
+  // Load data on component mount - SINGLE INITIALIZATION ONLY
   useEffect(() => {
-    getUsers();
+    const initKey = `${labReportId || 'new'}`;
+    
+    const initializeForm = async () => {
+      if (initializationRef.current[initKey] || !isMountedRef.current) return;
+      
+      initializationRef.current[initKey] = true;
+      
+      // Always get users first
+      if (isMountedRef.current) {
+        await getUsers();
+      }
+      
+      // Then get report if editing
+      if (labReportId && isMountedRef.current) {
+        await getReportById(labReportId);
+      }
+    };
 
-    if (labReportId) {
-      getReportById(labReportId);
-    }
-  }, [labReportId, getReportById, getUsers]);
+    initializeForm();
 
-  // Populate form when editing an existing report
+    return () => {
+      isMountedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labReportId]); // Only depend on labReportId
+
+  // Populate form when editing an existing report - ONLY RUN ONCE WHEN DATA CHANGES
   useEffect(() => {
-    if (currentReport && labReportId) {
+    const initKey = `${labReportId || 'new'}`;
+    if (currentReport && labReportId && initializationRef.current[initKey]) {
       setTestName(currentReport.testName);
       setTestResults(currentReport.testResults || "");
       setTestDate(
@@ -99,7 +123,15 @@ const LabReportForm: React.FC<LabReportFormProps> = ({
         setDoctorId(currentReport.doctor.id);
       }
     }
-  }, [currentReport, labReportId]);
+  }, [currentReport?.id, labReportId]); // Only depend on report ID changes
+
+  // Cleanup effect to ensure proper unmounting
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      clearErrorMessage();
+    };
+  }, [clearErrorMessage]);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -180,7 +212,7 @@ const LabReportForm: React.FC<LabReportFormProps> = ({
         : new Date().toISOString(),
       patient: { id: patientId } as User,
       doctor: { id: doctorId } as User,
-      medicalRecordId: null, // Set to null explicitly to avoid constraint violation
+      medicalRecordId: undefined, // Set to undefined to avoid constraint violation
     };
 
     let success = false;

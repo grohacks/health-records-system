@@ -12,9 +12,10 @@ import java.io.IOException;
 /**
  * CORS filter specifically for the direct-appointment endpoint
  * This filter adds CORS headers to all responses from the direct-appointment endpoint
+ * DISABLED: Using WebConfig CORS instead
  */
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+// @Component
+// @Order(Ordered.HIGHEST_PRECEDENCE)
 public class DirectAppointmentCorsFilter implements Filter {
 
     @Override

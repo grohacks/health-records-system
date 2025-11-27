@@ -19,15 +19,19 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                // Configure CORS for all endpoints
+                // Use allowedOriginPatterns to support credentials with wildcards and multiple environments
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173", "https://health-records-app.vercel.app", "https://health-records-app.netlify.app")
+                        .allowedOriginPatterns(
+                            "http://localhost:[*]", 
+                            "https://health-records-app.vercel.app", 
+                            "https://health-records-app.netlify.app"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("Authorization", "Content-Type", "X-Requested-With")
                         .allowCredentials(true)
                         .maxAge(3600);
 
-                System.out.println("CORS configured for all endpoints in WebConfig (Primary Configuration)");
+                System.out.println("CORS configured for all endpoints in WebConfig (Primary Configuration) using allowedOriginPatterns");
             }
         };
     }

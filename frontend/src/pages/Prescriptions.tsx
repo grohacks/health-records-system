@@ -61,7 +61,8 @@ const Prescriptions: React.FC = () => {
 
   useEffect(() => {
     getAllPrescriptions();
-  }, [getAllPrescriptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Check if user has edit permissions
   const canEdit =

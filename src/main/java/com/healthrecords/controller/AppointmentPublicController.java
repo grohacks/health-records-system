@@ -18,11 +18,24 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/open/appointments")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+@CrossOrigin(originPatterns = {"http://localhost:*"}, allowCredentials = "false")
 public class AppointmentPublicController {
 
     private final AppointmentService appointmentService;
     private final UserService userService;
+
+    /**
+     * Test endpoint
+     */
+    @GetMapping("/test")
+    public ResponseEntity<?> testEndpoint() {
+        System.out.println("==== Test endpoint reached ====");
+        return ResponseEntity.ok(Map.of(
+            "message", "AppointmentPublicController is working",
+            "timestamp", java.time.LocalDateTime.now().toString(),
+            "status", "success"
+        ));
+    }
 
     /**
      * Create a new appointment without authentication
@@ -32,9 +45,18 @@ public class AppointmentPublicController {
         try {
             System.out.println("==== Received request to create open appointment ====");
             System.out.println("Request: " + request);
+            System.out.println("Raw JSON received: " + request);
+            
+            // Print all fields individually for debugging
+            System.out.println("doctorId: " + request.getDoctorId());
+            System.out.println("patientId: " + request.getPatientId());
+            System.out.println("title: " + request.getTitle());
+            System.out.println("appointmentDateTime: " + request.getAppointmentDateTime());
+            System.out.println("description: " + request.getDescription());
             
             // Validate required fields
             if (request.getDoctorId() == null) {
+                System.out.println("ERROR: Doctor ID is null");
                 return ResponseEntity.badRequest().body(Map.of(
                     "error", "Doctor ID is required",
                     "status", "error"
@@ -42,6 +64,7 @@ public class AppointmentPublicController {
             }
             
             if (request.getPatientId() == null) {
+                System.out.println("ERROR: Patient ID is null");
                 return ResponseEntity.badRequest().body(Map.of(
                     "error", "Patient ID is required",
                     "status", "error"
@@ -49,6 +72,7 @@ public class AppointmentPublicController {
             }
             
             if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+                System.out.println("ERROR: Title is null or empty");
                 return ResponseEntity.badRequest().body(Map.of(
                     "error", "Title is required",
                     "status", "error"
@@ -56,6 +80,7 @@ public class AppointmentPublicController {
             }
             
             if (request.getAppointmentDateTime() == null) {
+                System.out.println("ERROR: AppointmentDateTime is null");
                 return ResponseEntity.badRequest().body(Map.of(
                     "error", "Appointment date/time is required",
                     "status", "error"

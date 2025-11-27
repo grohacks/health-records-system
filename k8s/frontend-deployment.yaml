@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-records-frontend
+  labels:
+    app: health-records-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: health-records-frontend
+  template:
+    metadata:
+      labels:
+        app: health-records-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: your-dockerhub-username/health-records-frontend:latest
+        ports:
+        - containerPort: 80
