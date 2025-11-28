@@ -304,21 +304,16 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
           );
 
           try {
-            const axios = (await import("axios")).default;
+            // Import the openApi from our API service instead of direct axios
+            const { openApi } = await import("../services/api");
             // Remove status field if present
             if ("status" in appointmentData) {
               delete appointmentData.status;
             }
             // POST to the correct endpoint for public/patient appointment creation
-            const response = await axios.post(
-              "/api/open/appointments",
-              appointmentData,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-              }
+            const response = await openApi.post(
+              "/open/appointments",
+              appointmentData
             );
             console.log("Appointment creation result:", response.data);
             // Don't return here - we need to call onSuccess()
