@@ -27,38 +27,46 @@ This repository contains a complete DevOps pipeline for the Health Records Manag
 - `.github/workflows/ci.yml` - Complete CI/CD pipeline that:
   - Builds backend and frontend Docker images
   - Pushes images to Docker Hub
-  - Deploys to Kubernetes cluster
+  - Does NOT directly deploy to Kubernetes (for security)
 
-### 4. Ansible-like Automation Scripts (Windows Compatible)
-- `deploy-health-records.bat` - Deploys all Kubernetes manifests
+### 4. Automation Scripts (Windows Compatible)
+- `deploy-health-records.bat` - Deploys all Kubernetes manifests (initial setup)
+- `update-from-dockerhub.bat` - Updates Kubernetes to use latest images from Docker Hub
 - `cleanup-health-records.bat` - Cleans up all Kubernetes resources
 
 ## Usage
 
-### Local Development and Deployment
+### Local Development Workflow
 
+#### Initial Setup (After System Restart):
 1. **Start Docker Desktop** with Kubernetes enabled
-
 2. **Deploy the application** using the batch script:
    ```
    .\deploy-health-records.bat
    ```
-
 3. **Access the applications**:
    - Frontend: http://localhost:30485
    - Backend API: http://localhost:30980/api/
 
-4. **Clean up resources** when needed:
+#### Code Update Workflow:
+1. **Make code changes** and push to GitHub
+2. **GitHub Actions** automatically builds and pushes new images to Docker Hub
+3. **Update your local Kubernetes** to use the new images:
    ```
-   .\cleanup-health-records.bat
+   .\update-from-dockerhub.bat
    ```
+4. **Your applications** automatically show the updated code
+
+#### Clean Up Resources:
+```
+.\cleanup-health-records.bat
+```
 
 ### GitHub Actions Workflow
 
 1. **Set up secrets** in your GitHub repository:
    - `DOCKER_USERNAME` - Your Docker Hub username
    - `DOCKER_PASSWORD` - Your Docker Hub password/access token
-   - `KUBE_CONFIG_DATA` - Base64 encoded kubeconfig for your Kubernetes cluster
 
 2. **Push changes** to the `main` branch to trigger the CI/CD pipeline
 
