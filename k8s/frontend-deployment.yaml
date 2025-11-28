@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: grohacks/health-records-frontend:latest
+        image: nishantrao2005/health-records-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
