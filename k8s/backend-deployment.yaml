@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: health-records-backend
+  namespace: default
   labels:
     app: health-records-backend
 spec:
